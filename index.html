@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!--修复抖动：标准移动端视口，不要写死width=640 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>华夏岁时·传统节日</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+html,body{
+    background:#222;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    overscroll-behavior:none; /*禁止手机橡皮筋回弹抖动*/
+}
+/* 外层容器，固定尺寸居中，手机上不会缩放抖动 */
+.wrap{
+    width:640px;
+    height:1008px;
+    position:relative;
+    overflow:hidden;
+}
+/* 页面容器 绝对定位环境 */
+.page{
+    width:640px;
+    height:1008px;
+    position:absolute;
+    top:0;
+    left:0;
+    display:none;
+    padding:40px 30px;
+}
+.page.active{display:block;}
+
+/*通用样式 国风配色*/
+.title{
+    font-size:48px;
+    color:#c8102e;
+    text-align:center;
+    font-weight:bold;
+    margin-top:120px;
+    text-shadow:2px 2px #ffdd99;
+}
+.sub-title{
+    font-size:28px;
+    text-align:center;
+    color:#8b2323;
+    margin-top:30px;
+}
+.desc{
+    font-size:24px;
+    line-height:42px;
+    color:#333;
+    margin-top:40px;
+}
+.btn{
+    width:220px;
+    height:70px;
+    line-height:70px;
+    background:#c8102e;
+    color:#fff;
+    text-align:center;
+    border-radius:12px;
+    font-size:26px;
+    position:absolute;
+    cursor:pointer;
+    left:210px;
+    overflow:hidden;
+}
+.btn:hover{
+    background:#a80020;
+}
+
+/*音乐按钮 全局悬浮*/
+#audioBtn{
+    width:80px;height:80px;
+    position:absolute;
+    top:30px;right:30px;
+    background:#d40000;
+    color:#fff;
+    border-radius:50%;
+    text-align:center;
+    line-height:80px;
+    font-size:32px;
+    z-index:999;
+    cursor:pointer;
+}
+
+/* ---------- 动画效果 ---------- */
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(40px);}
+    to{opacity:1;transform:translateY(0);}
+}
+@keyframes swing{
+    0%,100%{transform:rotate(-8deg);}
+    50%{transform:rotate(8deg);}
+}
+@keyframes float{
+    0%{transform:translateY(0px);}
+    50%{transform:translateY(-10px);}
+    100%{transform:translateY(0px);}
+}
+@keyframes glow{
+    0%,100%{box-shadow:0 0 8px #ffdd99;}
+    50%{box-shadow:0 0 20px #ffdd99,0 0 30px #ff8800;}
+}
+.ani-fade{animation:fadeIn 1.2s ease forwards;}
+.swing{animation:swing 2s infinite ease-in-out;}
+.float{animation:float 3s infinite ease-in-out;}
+.glow{animation:glow 2.5s infinite ease-in-out;}
+
+/* 飘落花瓣 增加硬件加速，解决手机抖动 */
+.petal{
+    position:absolute;
+    font-size:24px;
+    color:#ff9999;
+    pointer-events:none;
+    z-index:1;
+    animation:fall 8s linear infinite;
+    transform:translateZ(0);
+    will-change:transform,opacity;
+}
+@keyframes fall{
+    0%{transform:translateY(-30px) rotate(0deg);opacity:0;}
+    10%{opacity:1;}
+    90%{opacity:1;}
+    100%{transform:translateY(1050px) rotate(360deg);opacity:0;}
+}
+
+/* 烟花粒子 */
+.spark{
+    position:absolute;
+    width:6px;
+    height:6px;
+    background:#ffcc00;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:2;
+    animation:sparkle 0.8s ease-out forwards;
+    transform:translateZ(0);
+}
+@keyframes sparkle{
+    0%{transform:scale(0);opacity:1;}
+    100%{transform:scale(1.5);opacity:0;}
+}
+
+/* 按钮点击波纹 */
+.ripple{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,0.6);
+    transform:scale(0);
+    animation:rippleEffect 0.6s ease-out forwards;
+    pointer-events:none;
+}
+@keyframes rippleEffect{
+    to{transform:scale(4);opacity:0;}
+}
+
+/*页面1 首页 红色国风背景*/
+#page1{background:#fff2e8;background-image:linear-gradient(#ffecec,#fff3e0);}
+.lantern{
+    position:absolute;top:80px;left:80px;font-size:80px;
+}
+.lantern2{
+    position:absolute;top:80px;right:80px;font-size:80px;
+}
+
+/*页面2 春节*/
+#page2{background:#fff0e9;}
+.spring-icon{font-size:100px;text-align:center;margin-top:60px;}
+
+/*页面3 端午节*/
+#page3{background:#e8f4ff;}
+.dragon-icon{font-size:100px;text-align:center;margin-top:60px;}
+
+/*页面4 重阳节*/
+#page4{background:#fff6e0;}
+.chong-icon{font-size:100px;text-align:center;margin-top:60px;}
+
+/*页面5 小测试页*/
+#page5{background:#fcf0f0;}
+.opt{
+    width:560px;height:65px;
+    border:2px solid #c8102e;
+    border-radius:10px;
+    margin:20px auto;
+    text-align:center;
+    line-height:65px;
+    font-size:26px;
+    cursor:pointer;
+    transition:all 0.3s ease;
+}
+
+#page6{background:#fff2e8;}
+
+#page7{background:#fff2e8;}
+
+#page8{background:#fff2e8;}
+
+.opt:hover{
+    background:#ffdddd;
+    transform:scale(1.02);
+}
+.opt:active{
+    transform:scale(0.98);
+}
+
+/*页面9 尾页*/
+#page9{background:#ffecec;}
+
+/* 装饰角标 */
+.corner{
+    position:absolute;
+    width:120px;
+    height:120px;
+    opacity:0.08;
+    background:radial-gradient(circle,#c8102e 0%,transparent 70%);
+    border-radius:50%;
+}
+.corner-tl{top:0;left:0;}
+.corner-tr{top:0;right:0;}
+.corner-bl{bottom:0;left:0;}
+.corner-br{bottom:0;right:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="audioBtn">🔊</div>
+
+<!-- 飘落花瓣容器 -->
+<div id="petalBox"></div>
+
+<!--page1 首页【第1页】-->
+<div class="page active" id="page1">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="lantern swing">🏮</div>
+    <div class="lantern2 swing">🏮</div>
+    <div class="title ani-fade">华夏岁时</div>
+    <div class="sub-title ani-fade">中国传统节日文化</div>
+    <div class="desc ani-fade" style="text-align:center;">春节｜端午节｜重阳节</div>
+    <div class="btn glow" style="bottom:140px;" onclick="nextPage()">开始浏览</div>
+</div>
+
+<!--page2 春节【第2页】-->
+<div class="page" id="page2">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-br"></div>
+    <div class="spring-icon ani-fade float">🧨</div>
+    <div class="title ani-fade">春 节</div>
+    <div class="desc ani-fade">
+    春节是中华民族最隆重的岁首佳节。<br>
+    贴春联、放爆竹、守岁拜年，阖家团圆。<br>
+    红色灯笼、窗花剪纸，处处洋溢喜庆，<br>
+    寄托辞旧迎新、平安顺遂的美好祈愿。
+    </div>
+    <div class="btn" style="bottom:120px;" onclick="nextPage()">下一页</div>
+</div>
+
+<!--page3 端午节【第3页】-->
+<div class="page" id="page3">
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="dragon-icon ani-fade float">🐉</div>
+    <div class="title ani-fade">端午节</div>
+    <div class="desc ani-fade">
+    端午时值仲夏，纪念先贤屈原。<br>
+    赛龙舟、食粽子、挂艾草菖蒲。<br>
+    五彩绳系于手腕，驱邪纳福，<br>
+    流淌千年的家国情怀与民俗记忆。
+    </div>
+    <div class="btn" style="bottom:120px;" onclick="nextPage()">下一页</div>
+</div>
+
+<!--page4 重阳节【第4页】-->
+<div class="page" id="page4">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-bl"></div>
+    <div class="chong-icon ani-fade float">🍂</div>
+    <div class="title ani-fade">重阳节</div>
+    <div class="desc ani-fade">
+    九九重阳，久久敬老。<br>
+    登高望远、赏菊花、饮菊花酒、插茱萸。<br>
+    “九九”谐音久久，寓意福寿绵长，<br>
+    承载尊老敬老的中华传统美德。
+    </div>
+    <div class="btn" style="bottom:120px;" onclick="nextPage()">下一页</div>
+</div>
+
+<!--page5 互动小测试【第5页】交互点击答题-->
+<div class="page" id="page5">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-br"></div>
+    <div class="title ani-fade">节日小问答</div>
+    <div class="sub-title ani-fade">问题：重阳节主要习俗是？</div>
+    <div class="opt ani-fade" onclick="tipA()">A.赛龙舟吃粽子</div>
+    <div class="opt ani-fade" onclick="tipB()">B.登高赏菊插茱萸</div>
+    <div class="opt ani-fade" onclick="tipC()">C.贴春联守岁</div>
+    <div id="tipText" style="text-align:center;font-size:28px;margin-top:40px;color:#c8102e;"></div>
+    <div class="btn" style="bottom:80px;" onclick="nextPage()">继续</div>
+</div>
+
+<!--page6 文化小结【第6页】-->
+<div class="page" id="page6">
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="title ani-fade">节日小结</div>
+    <div class="desc ani-fade">
+    🧨春节：团圆迎新，辞旧岁<br>
+    🐉端午：追思先贤，龙舟粽香<br>
+    🍂重阳：敬老登高，福寿久久<br><br>
+    传统节日，是流淌在血脉中的中华文化，
+    承载代代中国人的情感与期盼。
+    </div>
+    <div class="btn" style="bottom:120px;" onclick="nextPage()">下一页</div>
+</div>
+
+<!--page7 跳转交互页【第7页】点击跳转不同节日回顾-->
+<div class="page" id="page7">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-br"></div>
+    <div class="title ani-fade">快速回顾</div>
+    <div class="sub-title ani-fade">点击按钮跳转对应节日</div>
+    <div class="opt ani-fade" onclick="goPage(2)">🧨回顾春节</div>
+    <div class="opt ani-fade" onclick="goPage(3)">🐉回顾端午节</div>
+    <div class="opt ani-fade" onclick="goPage(4)">🍂回顾重阳节</div>
+    <div class="btn" style="bottom:80px;" onclick="nextPage()">前往尾页</div>
+</div>
+
+<!--page8 过渡页【第8页】-->
+<div class="page" id="page8">
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="title ani-fade">感谢浏览</div>
+    <div class="desc ani-fade" style="text-align:center;">中华传统节日生生不息<br>传承千年华夏文明</div>
+    <div class="btn" style="bottom:140px;" onclick="nextPage()">结束</div>
+</div>
+
+<!--page9 尾页【第9页，必须要有尾页】-->
+<div class="page" id="page9">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-br"></div>
+    <div class="title ani-fade">尾 页</div>
+    <div class="desc ani-fade" style="text-align:center;margin-top:80px;">
+    主题：中国传统节日<br>
+    互动媒体设计实践作业<br>
+    </div>
+    <div class="btn" style="bottom:120px;" onclick="goPage(1)">返回首页</div>
+</div>
+
+<script>
+//页面数组
+let pages = ['page1','page2','page3','page4','page5','page6','page7','page8','page9'];
+let cur = 0;
+
+//切换到指定页码
+function goPage(num){
+    document.querySelector('.page.active').classList.remove('active');
+    cur = num -1;
+    document.getElementById(pages[cur]).classList.add('active');
+    document.getElementById('tipText').innerText="";
+}
+//下一页
+function nextPage(){
+    if(cur < pages.length-1){
+        document.querySelector('.page.active').classList.remove('active');
+        cur++;
+        document.getElementById(pages[cur]).classList.add('active');
+        document.getElementById('tipText').innerText="";
+    }
+}
+
+//答题交互
+function tipA(){document.getElementById("tipText").innerText="❌错误，这是端午节习俗";}
+function tipB(){document.getElementById("tipText").innerText="✅回答正确！";}
+function tipC(){document.getElementById("tipText").innerText="❌错误，这是春节习俗";}
+
+//=====完全JS创建音频对象，页面DOM不出现audio标签，解决空白问题=====
+let bgAudio = null;
+let musicPlay = false;
+const audioBtn = document.getElementById('audioBtn');
+
+audioBtn.onclick = function(){
+    if(!bgAudio){
+        //第一次点击才创建音频对象
+        bgAudio = new Audio();
+        bgAudio.src = "bgm.mp3";
+        bgAudio.loop = true;
+        bgAudio.volume = 0.4;
+    }
+    if(!musicPlay){
+        bgAudio.play();
+        audioBtn.innerText = "🔔";
+        musicPlay = true;
+    }else{
+        bgAudio.pause();
+        audioBtn.innerText = "🔇";
+        musicPlay = false;
+    }
+};
+
+// ---------- 飘落花瓣特效 ----------
+const petalBox = document.getElementById('petalBox');
+
+function createPetal(){
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+    petal.innerText = ['🌸','🍁','🪷','✨','❤️'][Math.floor(Math.random()*5)];
+    petal.style.left = Math.random()*640 + 'px';
+    petal.style.animationDuration = (5 + Math.random()*5) + 's';
+    petal.style.fontSize = (18 + Math.random()*12) + 'px';
+    petal.style.opacity = 0.4 + Math.random()*0.6;
+    petalBox.appendChild(petal);
+
+    setTimeout(()=>petal.remove(),10000);
+}
+setInterval(createPetal,800);
+
+// ---------- 点击烟花粒子特效 ----------
+document.body.addEventListener('click',function(e){
+    for(let i=0;i<8;i++){
+        const spark = document.createElement('div');
+        spark.className = 'spark';
+        spark.style.left = e.clientX + 'px';
+        spark.style.top = e.clientY + 'px';
+        spark.style.animationDelay = (i*0.05) + 's';
+        document.querySelector('.wrap').appendChild(spark);
+        setTimeout(()=>spark.remove(),800);
+    }
+});
+
+// ---------- 按钮波纹特效 ----------
+document.querySelectorAll('.btn,.opt').forEach(btn=>{
+    btn.addEventListener('click',function(e){
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple';
+        ripple.style.left = (e.offsetX - 25) + 'px';
+        ripple.style.top = (e.offsetY - 25) + 'px';
+        this.appendChild(ripple);
+        setTimeout(()=>ripple.remove(),600);
+    });
+});
+</script>
+</div>
+</body>
+</html>
