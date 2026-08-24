@@ -373,13 +373,7 @@ function createPetal(){
 setInterval(createPetal,800);
 
 //点击烟花
-let hasInitAudio = false;
 wrapDom.addEventListener('click',function(e){
-    // 用户随便点页面任意位置，初始化音频（苹果激活音频上下文）
-    if(!hasInitAudio){
-        bgAudio.load();
-        hasInitAudio=true;
-    }
     const rect = wrapDom.getBoundingClientRect();
     const x = ((e.clientX - rect.left)/rect.width)*100;
     const y = ((e.clientY - rect.top)/rect.height)*100;
